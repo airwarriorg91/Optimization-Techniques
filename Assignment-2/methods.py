@@ -159,15 +159,7 @@ def BFGS(fun, x0):
             dx0 = dx1
             dx1 = dervAtPoint(der,var,x1)
             B0 = B1
-            print(dx1)
         else:
             raise ValueError('No real positive value for A exists !')
     
-    return x1
-
-def testFunc(arr):
-    return arr[0] - arr[1] + 2*arr[0]**2 + 2*arr[0]*arr[1] + arr[1]**2
-
-x0 = [0, 0]
-
-print(BFGS(testFunc,x0))
+    return np.array(x1, dtype=float)
