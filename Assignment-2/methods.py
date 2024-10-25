@@ -18,20 +18,34 @@ def derv(func, variables):
 
     return df
 
-def dervAtPoint(der, var, values):  
-    val = createValueArray(var, values)
+def dervAtPoint(der, var, values):
+    val = dict(zip(var,values))  
     res = []
     for i in range(len(val)):
-        res.append(der[i].subs(val))
+        res.append(der[i].subs(val).evalf())
 
     return res
 
-def createValueArray(var, values):
-    val = {}
-    for i in range(len(var)):
-        val[str(var[i])] = values[i]
+def backtracking_line_search(fun, x, grad, direction, alpha=1.0, rho=0.8, c=1e-4):
+    """
+    Perform backtracking line search to find the optimal step size.
+    
+    Parameters:
+    - fun: objective function
+    - x: current point as a numpy array
+    - grad: gradient at the current point
+    - direction: search direction
+    - alpha: initial step size (default is 1)
+    - rho: factor to decrease alpha (0 < rho < 1), typically 0.8
+    - c: Armijo condition constant, typically 1e-4
 
-    return val
+    Returns:
+    - optimal alpha satisfying the Armijo condition
+    """
+    fx = fun(x)
+    while fun(x + alpha * direction) > fx + c * alpha * np.dot(grad, direction):
+        alpha *= rho  # Reduce step size by a factor of rho
+    return alpha
 
 def cauchyMethod(fun, x0):
     '''
@@ -41,9 +55,8 @@ def cauchyMethod(fun, x0):
     2. Compute the number of variables and create symbolic variables
     3. Create a symbolic function
     4. Find the gradient of the function
-    5. Find X1 in terms of A 
-    6. Determine A
-    7. Return the value of X1
+    5. Determine the step length
+    6. Return the value of X1
     '''
 
     # Find the number of variables
@@ -58,22 +71,15 @@ def cauchyMethod(fun, x0):
     # finding the gradient of the func
     der = derv(func, var)
 
-    # create a symbol 'A' and compute x1
-    A = sp.Symbol('A')
     derX0 = dervAtPoint(der,var,x0)
-    x1 = np.transpose(x0) - A*np.transpose(derX0)
-    valX1 = createValueArray(var, x1)
 
-    #derivative of objective function w.r.t A
-    dx1dA = sp.diff(func.subs(valX1),A)
-    valA = np.array(sp.solve(dx1dA))
+    if derX0 == [0]*nVar:
+        return x0
     
-    idx = np.where(np.logical_and(np.isreal(valA), valA>0))[0]
-
-    if idx.size > 0:
-        return [x1[i].subs({'A': valA[idx][0]}) for i in range(nVar)]
-    else:
-        raise ValueError('No real positive value for A exists !')
+    dir = -np.transpose(derX0)
+    step =  backtracking_line_search(fun,np.array(x0, dtype=float),derX0, dir)
+    x1 = np.transpose(x0) + step*dir
+    return x1
 
 def matrixUpdate(B0, g, d):
 
@@ -94,7 +100,14 @@ def matrixUpdate(B0, g, d):
 
     return B1
 
-def BFGS(fun, x0):
+
+def check(dx1, eps, x0, x1):
+    a1 = np.all(np.abs(dx1) < eps)
+    e = 1e-8
+    a2 = np.all(np.abs(x1-x0) < e)
+    return not (a1 or a2)
+
+def BFGS(fun, x0, eps=1e-15):
     '''
     This function implements the BFGS.
 
@@ -124,17 +137,13 @@ def BFGS(fun, x0):
     #find the first solution using cauchy's method
     x1 = cauchyMethod(fun, x0)
 
-    # create a symbol 'A'
-    A = sp.Symbol('A')
-
     #find the gradients at x0 and x1
     dx0 = dervAtPoint(der,var,x0)
     dx1 = dervAtPoint(der,var,x1)
 
     B0 = np.array([[1, 0], [0, 1]])
-    zero = np.zeros(nVar, dtype=int)
 
-    while not np.array_equal(dx1,zero):
+    while check(dx1,eps,x0,x1):
 
         # find g and d vectors
         g = np.transpose(dx1) - np.transpose(dx0)
@@ -142,24 +151,15 @@ def BFGS(fun, x0):
 
         # update B matrix
         B1 = matrixUpdate(B0,g,d)
-
-        # compute X1
-        xnew = np.transpose(x1) - A*B1@np.transpose(dx1)
-        valX1 = createValueArray(var, xnew)
-
-        #derivative of objective function w.r.t A
-        dx1dA = sp.diff(func.subs(valX1),A)
-        valA = np.array(sp.solve(dx1dA))
-        
-        idx = np.where(np.logical_and(np.isreal(valA), valA>0))[0]
-
-        if idx.size > 0:
-            x0 = x1
-            x1 = [xnew[i].subs({'A': valA[idx][0]}) for i in range(nVar)]
-            dx0 = dx1
-            dx1 = dervAtPoint(der,var,x1)
-            B0 = B1
-        else:
-            raise ValueError('No real positive value for A exists !')
     
-    return np.array(x1, dtype=float)
+        # compute optimal step length
+        dir = -B1@np.transpose(dx1)
+        step =  backtracking_line_search(fun, np.array(x1, dtype=float), dx1, dir)
+
+        x0 = x1
+        x1 = np.transpose(x1) + step*dir
+        dx0 = dx1
+        dx1 = dervAtPoint(der,var,x1)
+        B0 = B1
+    
+    return np.round(np.array(x1,dtype='float'), 5)
