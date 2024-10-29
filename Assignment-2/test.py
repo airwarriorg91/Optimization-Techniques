@@ -1,4 +1,5 @@
-from methods import BFGS
+from BFGS import BFGS
+from GA import GA
 import numpy as np
 import sympy as sp
 
@@ -23,23 +24,34 @@ def multimodalBenchmark(arr):
     # Global Minimum at (0,0)
     return -20*sp.exp(-0.2*sp.sqrt(0.5*(arr[0]**2 + arr[1]**2))) - sp.exp(0.5*(sp.cos(2*sp.pi*arr[0]) + sp.cos(2*sp.pi*arr[1]))) + 20 + sp.exp(1)
 
-#BFGS Test
+# #BFGS Test
 
 x0 = [0, 0]
-sol = BFGS(testFunc,x0)
-assert(np.array_equal(sol, np.array([-1, 1.5])))
+sol1 = BFGS(testFunc,x0)
+assert(np.array_equal(sol1, np.array([-1, 1.5])))
 
-#Test for the unimodal function with global minima at [0,0]
+# Test for the unimodal function with global minima at [0,0]
 x0 = [-5,5]
-sol = BFGS(unimodalBenchmark,x0)
-assert(np.array_equal(sol, np.array([0,0])))
+sol2 = BFGS(unimodalBenchmark,x0)
+assert(np.array_equal(sol2, np.array([0,0])))
 
-#Test for the multimodal function with global minima at [0,0]
-
+# Test for the multimodal function with global minima at [0,0]
 x0 = [-5,5]
-sol = BFGS(multimodalBenchmark,x0)
-assert(not np.array_equal(sol, np.array([0,0]))) # Converges to a local maxima
+sol3 = BFGS(multimodalBenchmark,x0)
+assert(not np.array_equal(sol3, np.array([0,0]))) # Converges to a local maxima
 
 x0 = [-0.1,0.1]
-sol = BFGS(multimodalBenchmark,x0)
-assert(np.array_equal(sol, np.array([0,0]))) # Converges to the global maxima
+sol4 = BFGS(multimodalBenchmark,x0)
+assert(np.array_equal(sol4, np.array([0,0]))) # Converges to the global maxima
+
+# GA Test
+solGA1 = GA(60, 100, testFunc)
+print(f'Solution from BFGS: {sol1} and Solution from GA: {solGA1.DNA}')
+
+# Test for the unimodal function with global minima at [0,0]
+solGA2 = GA(60, 100, unimodalBenchmark)
+print(f'Solution from BFGS: {sol2} and Solution from GA: {solGA2.DNA}')
+
+# Test for the multimodal function with global minima at [0,0]
+solGA4 = GA(60, 100, multimodalBenchmark)
+print(f'Solution from BFGS: {sol4} and Solution from GA: {solGA4.DNA}')
