@@ -1,0 +1,126 @@
+% More info on this class can be found on: http://www.ctan.org/pkg/paper.
+\documentclass[12pt,a4paper,oneside]{paper} % Accepts option `twocolumn`.
+%\usepackage{fullpage} % If needed.
+\usepackage{lmodern} % Fonts. Needed somehow, otherwise things break.
+\usepackage[english]{babel} % English language/hyphenation.
+\usepackage[T1]{fontenc} % Use 8-bit output encoding.
+\usepackage[utf8]{inputenc} % Can use UTF-8 in the source files.
+\usepackage[babel]{microtype} % Improves appearance of text.
+\usepackage{url}
+\usepackage{csquotes}
+\usepackage{float}
+\usepackage[]{minted}
+\usepackage{amsmath,amsthm, amssymb}
+% Reference sheet: http://merkel.zoneo.net/Latex/natbib.php
+% \usepackage{natbib} % Better references
+% \bibliographystyle{abbrvnat}
+% If possible, it is preferable to directly include PDF images.
+\usepackage{graphicx}
+\graphicspath{{fig/}}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=false,
+  pdfauthor={Gaurav Gupta},
+  pdftitle={Assignment 2: Code for BFGS and GA}
+}
+
+%creates a new question command
+\newcommand{\question}{%
+    \stepcounter{section}% Increment the section counter
+    \section*{Question \thesection}% Print "Question" followed by the updated section number
+    \addcontentsline{toc}{section}{Question \thesection}% Optionally add to the table of contents
+}
+
+\newcommand{\variables}{%
+    {\subsection{Decision Variables}} % Smaller font for subsection title
+    \addcontentsline{toc}{subsection}{Decision Variables}
+}
+
+\newcommand{\constraints}{%
+    {\subsection{Constraints}} % Smaller font for subsection title
+    \addcontentsline{toc}{subsection}{Constraints}
+}
+
+\newcommand{\of}{%
+    {\subsection{Objective Function}} % Smaller font for subsection title
+    \addcontentsline{toc}{subsection}{Objective Function}
+}
+
+\newcommand{\sol}{%
+    {\subsection{Solution}} % Smaller font for subsection title
+    \addcontentsline{toc}{subsection}{Solution}
+}
+
+% Removes double spacing after end of sentence.
+% See: http://practicaltypography.com/one-space-between-sentences.html.
+\frenchspacing
+
+
+\title{Assignment 2: Python Code for BFGS and GA}
+\subtitle{AE413: Optimization techniques in engineering}
+\author{Gaurav Gupta, SC21B026}
+
+% Don't know how this is used. Removing it messes the header.
+\shortauthor{Gaurav}
+\shorttitle{Assignment 2}
+
+\begin{document}
+\maketitle
+
+% \abstract{}
+
+\section{Overview}
+
+This report discusses the implementation and testing of two optimization algorithms: \textbf{BFGS (Broyden–Fletcher–Goldfarb–Shanno)} and \textbf{Genetic Algorithm (GA)} in python. Both algorithms serve different optimization needs, with BFGS being suitable for smooth, differentiable functions and GA being more flexible for complex, non-linear, and non-differentiable problems.
+
+\subsection*{BFGS Algorithm}
+
+BFGS is a quasi-Newton method used to find local minima of smooth functions. It approximates the Hessian matrix to iteratively update the search direction, making it efficient for problems where derivatives are available and relatively inexpensive to compute. The BFGS method is particularly well-suited for smooth, unimodal functions and is widely used in various scientific and engineering applications due to its convergence properties and computational efficiency.
+
+\subsection*{Genetic Algorithm (GA)}
+
+GA is an evolutionary algorithm inspired by the principles of natural selection and genetics. This implementation includes:
+\begin{itemize}
+    \item \textbf{Elitism-based selection}: Ensures the fittest individuals are carried over to the next generation.
+    \item \textbf{Simulated Binary Crossover (SBX)}: Combines pairs of parents to produce offspring with a controlled level of diversity.
+    \item \textbf{Normally Disturbed Mutation}: Introduces small variations in offspring to enhance exploration of the search space.
+\end{itemize}
+GA is particularly effective for global optimization, where the objective function may be non-linear, multi-modal, or non-differentiable.
+
+\section{Test Functions and Results}
+
+Two benchmark functions were used to evaluate the performance of BFGS and GA:
+
+\begin{itemize}
+    \item \textbf{Bohachevsky Function}: 
+    \[
+    f(x, y) = x^2 + 2y^2 - 0.3\cos(3\pi x) - 0.4\cos(4\pi y) + 0.7
+    \]
+    This unimodal function tests the algorithms' ability to converge to a global minimum in a smooth landscape.
+
+    \item \textbf{Ackley Function}:
+    \[
+    f(x, y) = -20 \exp\left(-0.2 \sqrt{0.5(x^2 + y^2)}\right) - \exp\left(0.5(\cos(2\pi x) + \cos(2\pi y))\right) + 20 + \exp(1)
+    \]
+    Known for its numerous local minima, the Ackley function challenges the algorithms with a rugged, multimodal landscape.
+\end{itemize}
+
+\section{Results from the Code}
+
+The following are sample outputs from running the BFGS and GA algorithms on the test functions:
+
+\begin{verbatim}
+Solution from BFGS: [-1.   1.5] and Solution from GA: [-0.99964371  1.65817322]
+Solution from BFGS: [-0.  0.] and Solution from GA: [-0.06193411  0.02544361]
+Solution from BFGS: [ 0. -0.] and Solution from GA: [0.01887624 0.95234389]
+\end{verbatim}
+(Results may vary with different parameters)
+
+\section{Conclusion}
+
+The BFGS algorithm is effective for smooth, unimodal functions like the Bohachevsky function, achieving convergence with relatively few iterations. The Genetic Algorithm, with elitism-based selection, SBX, and normally disturbed mutation, provides robust performance across both unimodal and multimodal functions, particularly with the challenging Ackley function. These results demonstrate the complementary strengths of BFGS and GA in solving diverse optimization problems.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \bibliography{paper} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
