@@ -2,7 +2,7 @@ from BFGS import BFGS
 from GA import GA
 import numpy as np
 import sympy as sp
-
+from ttictoc import tic, toc
 # Sample Test Problem for BFGS
 def testFunc(arr):
     return arr[0] - arr[1] + 2*arr[0]**2 + 2*arr[0]*arr[1] + arr[1]**2
@@ -32,26 +32,39 @@ assert(np.array_equal(sol1, np.array([-1, 1.5])))
 
 # Test for the unimodal function with global minima at [0,0]
 x0 = [-5,5]
+tic()
 sol2 = BFGS(unimodalBenchmark,x0)
+print(toc())
 assert(np.array_equal(sol2, np.array([0,0])))
 
 # Test for the multimodal function with global minima at [0,0]
 x0 = [-5,5]
+tic()
 sol3 = BFGS(multimodalBenchmark,x0)
+print(toc())
+print(sol3)
 assert(not np.array_equal(sol3, np.array([0,0]))) # Converges to a local maxima
 
 x0 = [-0.1,0.1]
+tic()
 sol4 = BFGS(multimodalBenchmark,x0)
+print(toc())
 assert(np.array_equal(sol4, np.array([0,0]))) # Converges to the global maxima
 
 # GA Test
+tic()
 solGA1 = GA(60, 100, testFunc)
+print(toc())
 print(f'Solution from BFGS: {sol1} and Solution from GA: {solGA1.DNA}')
 
 # Test for the unimodal function with global minima at [0,0]
+tic()
 solGA2 = GA(60, 100, unimodalBenchmark)
+print(toc())
 print(f'Solution from BFGS: {sol2} and Solution from GA: {solGA2.DNA}')
 
 # Test for the multimodal function with global minima at [0,0]
+tic()
 solGA4 = GA(60, 100, multimodalBenchmark)
+print(toc())
 print(f'Solution from BFGS: {sol4} and Solution from GA: {solGA4.DNA}')
